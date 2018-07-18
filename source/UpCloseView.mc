@@ -10,21 +10,21 @@ using Toybox.Time.Gregorian;
 class UpCloseView extends WatchUi.WatchFace {
 
 	// global variables
-	var aCx 			= null; 		// absolute center x coordinate
-	var aCy 			= null;			// absolute center y coordinate
-	var r1  			= null; 		// absolute circle radius
-	var rCx 			= null; 		// relative center x coordinate
-	var rCy 			= null; 		// relative center y coordinate
-	var r2  			= null; 		// relative circle radius
-	var lCx 			= null;			// opposite point to rCx
-	var lCy 			= null; 		// opposite point to rCy 
-	var bCx 			= null;			// bottom point of minute arc x
-	var bCy				= null;			// bottom point of minute arc y 
-	var tCx 			= null;			// top point of minute arc x
-	var tCy 			= null; 		// top point of minute arc y
-	var hrR				= null;			// radius of circle to draw hours from
-	var hfR				= null; 		// radius of circle to draw 30 min ticks from
-	var htR 			= null;			// radius of circle to draw 15 min ticks from
+	var aCx 			= 0.0; 		// absolute center x coordinate
+	var aCy 			= 0.0;			// absolute center y coordinate
+	var r1  			= 0.0; 		// absolute circle radius
+	var rCx 			= 0.0; 		// relative center x coordinate
+	var rCy 			= 0.0; 		// relative center y coordinate
+	var r2  			= 0.0; 		// relative circle radius
+	var lCx 			= 0.0;			// opposite point to rCx
+	var lCy 			= 0.0; 		// opposite point to rCy 
+	var bCx 			= 0.0;			// bottom point of minute arc x
+	var bCy				= 0.0;			// bottom point of minute arc y 
+	var tCx 			= 0.0;			// top point of minute arc x
+	var tCy 			= 0.0; 		// top point of minute arc y
+	var hrR				= 0.0;			// radius of circle to draw hours from
+	var hfR				= 0.0; 		// radius of circle to draw 30 min ticks from
+	var htR 			= 0.0;			// radius of circle to draw 15 min ticks from
 	var numeralFont 	= null;			// font to use on the numbers
 	
     function initialize() {
@@ -89,12 +89,13 @@ class UpCloseView extends WatchUi.WatchFace {
 		
 		var count = 0.0; // going to 120, counting minutes 
 		var radian = 0.0;
-		var Dx; // draw x
-		var Dy; // draw y
-		var Dx2;
-		var Dy2;
-		var Mx; // change in x
-		var My; // change in y
+		var Dx = 0.0; // draw x
+		var Dy = 0.0; // draw y
+		var Dx2 = 0.0;
+		var Dy2 = 0.0;
+		var Mx = 0.0; // change in x
+		var My = 0.0; // change in y
+		var d = 0.0; // distance between D and D2
 		hours = hours - 1;
 		if (hours < 0) {
 			hours = 12;
@@ -115,8 +116,9 @@ class UpCloseView extends WatchUi.WatchFace {
 					dc.drawLine(Dx, Dy, Dx2, Dy2);
 					Mx = (Dx2 - Dy).abs();
 					My = (Dy2 - Dy).abs(); 
+					d = Math.sqrt(Math.pow(Mx, 2) + Math.pow(My, 2));
 					Dx = Dx2 + (3 * Mx / 8);
-					Dy = Dy2 + (3 * My / 8) - 48; // extra offset for font size
+					Dy = Dy2 + (3 * My / 8) - (48 * (My / d)); // extra offset for font size
 					dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
 					drawHours = hours % 12;
 					if (drawHours == 0) {
