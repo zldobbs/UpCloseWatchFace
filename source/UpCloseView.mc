@@ -10,21 +10,22 @@ using Toybox.Time.Gregorian;
 class UpCloseView extends WatchUi.WatchFace {
 
 	// global variables
-	var aCx 			= 0.0; 		// absolute center x coordinate
+	var aCx 			= 0.0; 			// absolute center x coordinate
 	var aCy 			= 0.0;			// absolute center y coordinate
-	var r1  			= 0.0; 		// absolute circle radius
-	var rCx 			= 0.0; 		// relative center x coordinate
-	var rCy 			= 0.0; 		// relative center y coordinate
-	var r2  			= 0.0; 		// relative circle radius
+	var r1  			= 0.0; 			// absolute circle radius
+	var rCx 			= 0.0; 			// relative center x coordinate
+	var rCy 			= 0.0; 			// relative center y coordinate
+	var r2  			= 0.0; 			// relative circle radius
 	var lCx 			= 0.0;			// opposite point to rCx
-	var lCy 			= 0.0; 		// opposite point to rCy 
+	var lCy 			= 0.0; 			// opposite point to rCy 
 	var bCx 			= 0.0;			// bottom point of minute arc x
 	var bCy				= 0.0;			// bottom point of minute arc y 
 	var tCx 			= 0.0;			// top point of minute arc x
-	var tCy 			= 0.0; 		// top point of minute arc y
+	var tCy 			= 0.0; 			// top point of minute arc y
 	var hrR				= 0.0;			// radius of circle to draw hours from
-	var hfR				= 0.0; 		// radius of circle to draw 30 min ticks from
+	var hfR				= 0.0; 			// radius of circle to draw 30 min ticks from
 	var htR 			= 0.0;			// radius of circle to draw 15 min ticks from
+	var hsR				= 0.0; 			// radius of circle to draw 5 min ticks from
 	var numeralFont 	= null;			// font to use on the numbers
 	
     function initialize() {
@@ -35,7 +36,7 @@ class UpCloseView extends WatchUi.WatchFace {
     function onLayout(dc) {
         setLayout(Rez.Layouts.WatchFace(dc));
         
-        numeralFont = loadResource(Rez.Fonts.montserrat);
+        numeralFont = loadResource(Rez.Fonts.roboto48);
         
         // setup absolute circle (watch face)
         aCx = dc.getWidth() / 2; 
@@ -59,9 +60,10 @@ class UpCloseView extends WatchUi.WatchFace {
     	//System.println("Bottom center: 	 (" + bCx + ", " + bCy + ")");
     	
     	r2 = bCy - rCy; 
-    	hrR = 3 * r2 / 4;
-    	hfR = 5 * r2 / 6;
-    	htR = 7 * r2 / 8;
+    	hrR = 0.75 * r2;
+    	hfR = 0.80 * r2;
+    	htR = 0.85 * r2;
+    	hsR = 0.93 * r2;
     }
 
     // Called when this View is brought to the foreground. Restore
@@ -74,7 +76,7 @@ class UpCloseView extends WatchUi.WatchFace {
     function onUpdate(dc) {
 		dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
 		dc.clear();
-		dc.setPenWidth(6);
+		dc.setPenWidth(3);
 		// draw background 
 		dc.fillCircle(aCx, aCy, r1);
 		// draw arc for time
@@ -101,7 +103,7 @@ class UpCloseView extends WatchUi.WatchFace {
 			hours = 12;
 		} 
 		var drawHours = hours;
-		dc.setPenWidth(4);
+		dc.setPenWidth(1);
 		// System.println("Earlier Time: " + hours + ":" + minutes);
 		while (count < 120) {
 			switch(minutes) {
@@ -114,11 +116,15 @@ class UpCloseView extends WatchUi.WatchFace {
 					Dx2 = rCx + (hrR * Math.cos(radian));
 					Dy2 = rCy + (hrR * Math.sin(radian));
 					dc.drawLine(Dx, Dy, Dx2, Dy2);
-					Mx = (Dx2 - Dy).abs();
-					My = (Dy2 - Dy).abs(); 
+					System.println("D = (" + Dx + ", " + Dy + ")");
+					System.println("D2 = (" + Dx2 + ", " + Dy2 + ")");
+					Mx = (Dx - Dx2).abs();
+					My = (Dy - Dy2).abs(); 
+					System.println("Mx = " + Mx + ", My = " + My);
 					d = Math.sqrt(Math.pow(Mx, 2) + Math.pow(My, 2));
-					Dx = Dx2 + (3 * Mx / 8);
-					Dy = Dy2 + (3 * My / 8) - (48 * (My / d)); // extra offset for font size
+					Dx = Dx2 + (0.5 * Mx);
+					Dy = Dy2 - (0.5 * My) - 24; // extra offset for font size
+					System.println("Adjusted D = (" + Dx + ", " + Dy + ")");
 					dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
 					drawHours = hours % 12;
 					if (drawHours == 0) {
@@ -146,6 +152,21 @@ class UpCloseView extends WatchUi.WatchFace {
 					Dy2 = rCy + (hfR * Math.sin(radian));
 					dc.drawLine(Dx, Dy, Dx2, Dy2);
 					break;
+				case 5:
+				case 10:
+				case 20:
+				case 25:
+				case 35:
+				case 40:
+				case 50:
+				case 55:
+					radian = (Math.PI / 2) + ((Math.PI / 2) * (count / 120));
+					Dx = rCx + (r2 * Math.cos(radian));
+					Dy = rCy + (r2 * Math.sin(radian));
+					Dx2 = rCx + (hsR * Math.cos(radian));
+					Dy2 = rCy + (hsR * Math.sin(radian));
+					dc.drawLine(Dx, Dy, Dx2, Dy2);
+					break;
 				default:
 					// do nuttin
 					break;
@@ -163,6 +184,7 @@ class UpCloseView extends WatchUi.WatchFace {
 		//System.println("Later Time: " + hours + ":" + minutes);
 		
 		// draw line for minute hand, this should be drawn last
+		dc.setPenWidth(2);
 		dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_RED);
 		dc.drawLine(lCx, lCy, rCx, rCy);
     }

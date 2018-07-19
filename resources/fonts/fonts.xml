@@ -1,3 +1,4 @@
 <fonts>
 	<font id="montserrat" filename="montserrat.fnt" filter="0123456789" antialias="true" />
+	<font id="roboto48" filename="roboto-48.fnt" filter="0123456789" antialias="true" />
 </fonts>
